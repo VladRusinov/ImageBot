@@ -15,8 +15,7 @@ class ImageProcessor:
         return Image.fromarray(self.result_image)
 
     def to_grayscale(self):
-        if len(self.image.shape) == 3:  # Проверка на цветное изображение
-            # Усреднение для преобразования в градации серого
+        if len(self.image.shape) == 3:
             self.grayscale_image = np.mean(
                 self.image[:, :, :3], axis=2
             ).astype(np.uint8)
