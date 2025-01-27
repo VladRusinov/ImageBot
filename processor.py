@@ -9,12 +9,16 @@ class ImageProcessor:
         self.result_image = None
 
     def convert_image_to_array(self, img):
+        """Преобразование изображения в массив NumPy."""
         return np.array(Image.open(img))
 
     def convert_image_from_array(self):
+        """Преобразование массива NumPy в изображение."""
         return Image.fromarray(self.result_image)
 
     def to_grayscale(self):
+        """Преобразование цветного изображения
+        в изображение в градациях серого."""
         if len(self.image.shape) == 3:
             self.grayscale_image = np.mean(
                 self.image[:, :, :3], axis=2
@@ -23,6 +27,8 @@ class ImageProcessor:
             self.grayscale_image = self.image
 
     def apply_laplacian(self):
+        """Преобразование изображения в градациях
+        серого в изобрабражение с выделенными контурами."""
         laplacian_mask = np.array([[0, 1, 0],
                                    [1, -4, 1],
                                    [0, 1, 0]])
