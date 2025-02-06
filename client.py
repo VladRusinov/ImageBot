@@ -3,13 +3,17 @@ import os
 from dotenv import load_dotenv
 from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
 
+from exceptions import NoEnvVariablesError
 from handlers import image_handle, message_handle, wake_up
+from logger_config import logger
+
 
 load_dotenv()
 
 token = os.getenv('TOKEN')
 if not token:
-    raise ValueError("TOKEN is not set in the environment variables.")
+    logger.critical('Отсутствуют переменные окружения')
+    raise NoEnvVariablesError()
 
 updater = Updater(token=token)
 

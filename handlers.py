@@ -1,23 +1,39 @@
 from io import BytesIO
 
+from telegram.error import TelegramError
+
 from processor import ImageProcessor
+from logger_config import logger
 
 
 def message_handle(update, context):
     """Обработка текстового сообщения."""
-    chat = update.effective_chat
-    context.bot.send_message(chat_id=chat.id, text='Отправьте мне изображение')
+    try:
+        chat = update.effective_chat
+        context.bot.send_message(
+            chat_id=chat.id,
+            text='Отправьте мне изображение'
+        )
+    except TelegramError as error:
+        logger.error(f'Не удалось отправить сообщение: {error}')
+    else:
+        logger.debug('Сообщение успешно отправлено')
 
 
 def wake_up(update, context):
     """Обработка запуска бота."""
-    chat = update.effective_chat
-    name = update.message.chat.first_name
-    context.bot.send_message(
-        chat_id=chat.id,
-        text='Привет {}! отправь изображение, для выделения контуров'
-        .format(name)
-    )
+    try:
+        chat = update.effective_chat
+        name = update.message.chat.first_name
+        context.bot.send_message(
+            chat_id=chat.id,
+            text=f'Привет {name}! Отправь изображение для выделения контуров.'
+            .format(name)
+        )
+    except TelegramError as error:
+        logger.error(f'Не удалось отправить сообщение: {error}')
+    else:
+        logger.debug('Сообщение успешно отправлено')
 
 
 def image_handle(update, context):
@@ -26,13 +42,31 @@ def image_handle(update, context):
     try:
         photo = update.message.photo
         file_stream = download_image(context, photo[-1].file_id)
-        processed_image = process_image(file_stream)
-        context.bot.send_photo(chat_id=chat.id, photo=processed_image)
-    except Exception:
+    except Exception as error:
+        logger.error(
+            f"Ошибка при загрузке изображения: {error}",
+            exc_info=True
+        )
         context.bot.send_message(
             chat_id=chat.id,
-            text="Произошла ошибка при обработке вашего запроса."
+            text="Не удалось загрузить изображение."
         )
+        return
+
+    try:
+        processed_image = process_image(file_stream)
+        context.bot.send_photo(chat_id=chat.id, photo=processed_image)
+    except Exception as error:
+        logger.error(
+            f"Ошибка при обработке изображения: {error}",
+            exc_info=True
+        )
+        context.bot.send_message(
+            chat_id=chat.id,
+            text="Ошибка обработки изображения."
+        )
+    else:
+        logger.debug("Изображение успешно обработано и отправлено.")
 
 
 def download_image(context, file_id):
