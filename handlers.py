@@ -40,6 +40,10 @@ def image_handle(update, context):
     """Обработка изображения."""
     chat = update.effective_chat
     try:
+        processing_msg = context.bot.send_message(
+            chat_id=chat.id,
+            text="⏳ Обрабатываю изображение, пожалуйста, подождите..."
+        )
         photo = update.message.photo
         file_stream = download_image(context, photo[-1].file_id)
     except Exception as error:
@@ -55,15 +59,23 @@ def image_handle(update, context):
 
     try:
         processed_image = process_image(file_stream)
+        context.bot.delete_message(
+            chat_id=chat.id,
+            message_id=processing_msg.message_id
+        )
         context.bot.send_photo(chat_id=chat.id, photo=processed_image)
     except Exception as error:
         logger.error(
             f"Ошибка при обработке изображения: {error}",
             exc_info=True
         )
+        context.bot.delete_message(
+            chat_id=chat.id,
+            message_id=processing_msg.message_id
+        )
         context.bot.send_message(
             chat_id=chat.id,
-            text="Ошибка обработки изображения."
+            text="Произошла ошибка при обработке изображения. Попробуйте снова"
         )
     else:
         logger.debug("Изображение успешно обработано и отправлено.")
