@@ -37,6 +37,11 @@ pip install -r requirements.txt
 python3 client.py
 ```
 
+Так же можно запустить бота с помощью docker compose
+```
+docker compose up
+```
+
 
 ## как заполнить .env:
 ```
